@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: zenstudio-api
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+
+server:
+  port: ${PORT:8080}
+
+zenstudio:
+  cors:
+    # Orígenes del front separados por coma. En producción: CORS_ORIGINS=https://tu-app.vercel.app
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000}

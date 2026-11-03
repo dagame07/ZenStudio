@@ -1,0 +1,12 @@
+# Perfil por defecto: H2 en memoria, no requiere instalar nada. Los datos se pierden al apagar.
+spring:
+  datasource:
+    url: jdbc:h2:mem:zenstudio;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true

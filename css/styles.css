@@ -1,0 +1,35 @@
+/* ZenStudio · tema naturaleza (verde + rosa). Claro por defecto; oscuro por sistema o por data-theme="dark" */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f2f8f0;--sf:#fff;--tx:#23332a;--mu:#657a6c;--gr:#3f8a58;--gr2:#dcefe0;--pk:#d9668a;--pk2:#fde5ec;--bd:#d3e5d7;--rd:#c0392b;--on:#fff;--pp:#fbeef0}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121c17;--sf:#1c2a22;--tx:#eaf4ec;--mu:#9db5a4;--gr:#7fcf95;--gr2:#25392d;--pk:#f59ab9;--pk2:#3b2530;--bd:#2f4639;--rd:#ff8a7a;--on:#10241a;--pp:#2c2128}}
+:root[data-theme="dark"]{--bg:#121c17;--sf:#1c2a22;--tx:#eaf4ec;--mu:#9db5a4;--gr:#7fcf95;--gr2:#25392d;--pk:#f59ab9;--pk2:#3b2530;--bd:#2f4639;--rd:#ff8a7a;--on:#10241a;--pp:#2c2128}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:980px;margin:auto;padding:12px}
+h1{font:600 22px Georgia,serif;margin:0}h2{font:600 17px Georgia,serif;margin:0 0 8px}
+nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tabs{display:flex;gap:4px;overflow-x:auto;margin:8px 0}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:7px 11px}
+button{cursor:pointer}button.on,button.p{background:var(--gr);color:var(--on);border-color:var(--gr)}
+button.k{background:var(--pk);color:var(--on);border-color:var(--pk)}button.d{color:var(--rd);border-color:var(--rd)}button.s{padding:3px 8px;font-size:13px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}
+.login{max-width:380px;margin:12vh auto;padding:12px}.login label{display:block;margin:8px 0}.login input{width:100%}
+.err{color:var(--rd)}.mu{color:var(--mu);font-size:13px}.tag{font-size:12px;border-radius:20px;padding:1px 8px;border:1px solid var(--bd)}
+.banner{border:2px solid var(--pk);background:var(--pk2);border-radius:12px;padding:10px;margin-bottom:10px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cal .h{text-align:center;color:var(--mu);font-size:12px}
+.day{min-height:62px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:3px;cursor:pointer;font-size:11px;overflow:hidden}
+.day.sel{outline:2px solid var(--gr)}.day.td{border-color:var(--pk)}
+.chip{display:flex;gap:3px;align-items:center;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gr);flex:none}.dot.f{background:var(--pk)}.dot.c{background:var(--mu)}.dot.m{box-shadow:0 0 0 2px var(--pk)}
+@media(max-width:600px){.chip em{display:none}.day{min-height:48px}}
+.paper{background:var(--pp);border:1px solid var(--pk);border-radius:12px;padding:12px}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.sp{aspect-ratio:1;border:2px dashed var(--mu);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;position:relative;text-align:center}
+.sp i{position:absolute;top:2px;left:7px;font-style:normal;opacity:.6}
+.sp.st{border:3px solid var(--pk);background:var(--pk2);color:var(--pk);font-weight:700}.sp.st span{font-size:24px;transform:rotate(-12deg)}
+.sp.rs{border-color:var(--gr);color:var(--gr)}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:4px 0}
+.bar{height:8px;background:var(--gr2);border-radius:6px;overflow:hidden}.bar div{height:100%;background:var(--gr)}.bar.f div{background:var(--pk)}
+.nt{border-left:4px solid var(--gr);padding:6px 10px;margin:6px 0;background:var(--bg);border-radius:0 8px 8px 0}.nt.u{border-color:var(--pk)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.g2{grid-template-columns:1fr}}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:20px;display:none;z-index:9;max-width:90%}

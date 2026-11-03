@@ -1,7 +1,7 @@
 /* app.js · tema, enrutamiento con guardas por rol y manejo de eventos. */
 const $=id=>document.getElementById(id);
 let loginErr='';
-// ---- tema claro/oscuro: sistema por defecto, botón para forzar ----
+// ---- tema claro/oscuro: sistema por defecto, botón para forzar (el <head> de index.html aplica la clase .dark antes del primer pintado) ----
 const mq=window.matchMedia('(prefers-color-scheme: dark)');
 function applyTheme(){let t=null;try{t=localStorage.getItem('zen_theme')}catch(e){}document.documentElement.classList.toggle('dark',(t||(mq.matches?'dark':'light'))==='dark')}
 function toggleTheme(){const n=document.documentElement.classList.contains('dark')?'light':'dark';try{localStorage.setItem('zen_theme',n)}catch(e){}applyTheme();render()}
@@ -33,6 +33,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   case'open':u.sel=v;return render();
   case'cxask':u.cx=v;u.why=val('rs'+v);return render();
   case'cxno':u.cx=null;return render();
+  case'rsopen':u.rs=u.rs===+v?null:+v;return render();
+  case'rsno':u.rs=null;return render();
+  case'rsok':toast(Zen.reschedule(+v,val('rr'+v)));u.rs=null;break;
   case'res':toast(Zen.reserve(v));break;
   case'rel':Zen.cancelMine(v);toast('Listo');break;
   case'dismiss':Zen.dismiss(+v);break;

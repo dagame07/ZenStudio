@@ -4,5 +4,7 @@ Abrir `index.html` en el navegador (no requiere servidor ni dependencias).
 - `js/views.js`: plantillas HTML por vista. `js/app.js`: tema, rutas con guardas por rol y eventos.
 - `css/styles.css`: paleta verde/rosa y variables de modo claro/oscuro.
 - Credenciales de prueba: admin@zenstudio.com / admin123 · alumna@zenstudio.com / alumna123.
+- Reagendar en 1-clic: al cancelar Andrea una clase, la alumna ve el botón en su aviso y elige otra con cupo (próximos 7 días); los sellos no cambian.
+- Despliegue (Vercel/Netlify): sitio estático, sin build; carpeta raíz = la que contiene `index.html`.
 - Reiniciar datos: borrar `zen_data_v2` y `zen_session_v2` del localStorage.
 - Nota: sin backend, la autenticación es solo de demostración. Para producción migrar a Spring Boot + SQL (usuarios con hash, validación de rol en servidor).

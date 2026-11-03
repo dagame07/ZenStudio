@@ -42,7 +42,7 @@ const Zen=(()=>{
  const unread=()=>S.notes.filter(n=>mine(n)&&!n.readBy.includes(key())).length;
  const markRead=()=>{S.notes.forEach(n=>{if(mine(n)&&!n.readBy.includes(key()))n.readBy.push(key())});persist(S)}; // silencioso (sin re-render)
  const dismiss=id=>{const n=S.notes.find(x=>x.id===id);if(n&&mine(n)&&!n.readBy.includes(key()))n.readBy.push(key());save()};
- const notify=(to,text,kind)=>S.notes.unshift({id:S.nid++,ts:Date.now(),to,text,kind:kind||'info',readBy:[]});
+ const notify=(to,text,kind,cid)=>S.notes.unshift({id:S.nid++,ts:Date.now(),to,text,kind:kind||'info',readBy:[],cid:cid||null,moved:{}});
  const cdesc=c=>new Date(c.date+'T12:00').toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'})+' '+c.time+' con '+c.inst;
  // ---- cupos y lista de espera (FIFO) ----
  function join(cid,sid){const c=cl(cid),s=st(sid);
@@ -59,9 +59,20 @@ const Zen=(()=>{
  // ---- acciones de ALUMNA (solo sobre su propia cuenta) ----
  const reserve=cid=>{const s=need('alumna'),m=join(cid,s.sid);save();return m};
  const cancelMine=cid=>{const s=need('alumna');leave(cid,s.sid);save()};
+ // ---- reagendar en 1-clic: mueve a la alumna de una clase cancelada a otra con cupo; los sellos no se tocan ----
+ const nowKey=()=>{const d=new Date();return iso(d)+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+ const rescheduleNote=nid=>{const s=session(),n=S.notes.find(x=>x.id===nid);if(n&&!n.moved)n.moved={};const c=n&&n.cid?cl(n.cid):null;
+  return s&&s.role==='alumna'&&n&&mine(n)&&c&&c.st==='cx'&&!(n.moved&&n.moved[s.sid])?{n,c,s}:null};
+ function alternatives(nid){const r=rescheduleNote(nid);if(!r)return[];const lim=new Date(T);lim.setDate(T.getDate()+7);const to=iso(lim),now=nowKey(),sid=r.s.sid;
+  const sc=c=>(c.tp===r.c.tp?0:2)+(c.inst===r.c.inst?0:1);
+  return S.classes.filter(c=>c.st==='ok'&&c.enr.length<c.cap&&!c.enr.includes(sid)&&!c.wait.includes(sid)&&c.date+' '+c.time>now&&c.date<=to)
+   .sort((a,b)=>sc(a)-sc(b)||(a.date+a.time).localeCompare(b.date+b.time))}
+ function reschedule(nid,cid){const r=rescheduleNote(nid);if(!r)throw new Error('Esta clase ya no se puede reagendar');
+  if(!alternatives(nid).some(x=>x.id===cid))throw new Error('Esa clase ya no tiene lugar disponible: elige otra');
+  const c=cl(cid);join(cid,r.s.sid);r.n.moved[r.s.sid]=cid;if(!r.n.readBy.includes(r.s.sid))r.n.readBy.push(r.s.sid);save();return'Clase reagendada: '+cdesc(c)}
  // ---- acciones de ADMINISTRADORA ----
  const A=fn=>(...a)=>{need('admin');const r=fn(...a);save();return r};
- return{INS,TODAY,PKG,session,login,logout,reload,data:()=>S,st,cl,reserved,notesFor,pending,unread,markRead,dismiss,cdesc,reserve,cancelMine,
+ return{INS,TODAY,PKG,session,login,logout,reload,data:()=>S,st,cl,reserved,notesFor,pending,unread,markRead,dismiss,cdesc,reserve,cancelMine,canReschedule:nid=>!!rescheduleNote(nid),alternatives,reschedule,
   adminEnroll:A((cid,sid)=>join(cid,sid)),adminLeave:A((cid,sid)=>leave(cid,sid)),
   stamp:A((cid,sid)=>{const c=cl(cid);if(c.att.includes(sid))throw new Error('Ya tiene sello en esta clase');addStamp(st(sid),c.date);c.att.push(sid)}),
   manualStamp:A((sid,d)=>{const s=st(sid);if(d>0)addStamp(s,TODAY);else if(s.stamps.length){const last=s.stamps.pop();S.classes.forEach(c=>{if(c.date===last)c.att=c.att.filter(x=>x!==sid)})}}),
@@ -71,6 +82,6 @@ const Zen=(()=>{
   setInst:A((cid,i)=>{const c=cl(cid),o=c.inst;c.inst=i;if(c.enr.length)notify(c.enr,'Cambio de instructora en la clase del '+cdesc(c)+' (antes '+o+').','alert')}),
   addClass:A((date,time,tp,inst)=>{if(!date||!time)throw new Error('Indica fecha y hora');S.classes.push({id:'c'+Date.now(),date,time,tp,cap:tp==='t'?CAP_TARDE:CAP_MANANA,inst,st:'ok',enr:[],wait:[],att:[]});S.classes.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}),
   cancelClass:A((cid,why)=>{const c=cl(cid),to=[...c.enr,...c.wait];c.st='cx';
-   if(to.length)notify(to,'Clase cancelada - Favor de reagendar: '+cdesc(c)+' ('+why+'). No se descuenta de tu paquete.','alert');c.enr=[];c.wait=[];return to.length}),
+   if(to.length)notify(to,'Clase cancelada - Favor de reagendar: '+cdesc(c)+' ('+why+'). No se descuenta de tu paquete.','alert',c.id);c.enr=[];c.wait=[];return to.length}),
   sendNote:A((target,text)=>{if(!text)throw new Error('Escribe el mensaje');const c=target==='all'?null:cl(target);notify(c?[...c.enr,...c.wait]:'all',text,'info')})};
 })();

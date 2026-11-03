@@ -4,21 +4,29 @@ const V=(()=>{
  const Z=Zen,pad=n=>String(n).padStart(2,'0'),N=new Date();
  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const fd=s=>new Date(s+'T12:00').toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
- const ui={m:new Date(N.getFullYear(),N.getMonth(),1),day:Z.TODAY,sel:null,cx:null,why:'instructora enferma'};
+ const ui={m:new Date(N.getFullYear(),N.getMonth(),1),day:Z.TODAY,sel:null,cx:null,rs:null,why:'instructora enferma'};
  const SUN='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
  const MOON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+ const moved=n=>{const k=Z.session()&&Z.session().sid;return n.moved&&k&&n.moved[k]?Z.cl(n.moved[k]):null};
+ const rsBtn=n=>Z.canReschedule(n.id)?`<button class="k s" data-a="rsopen" data-v="${n.id}">Reagendar en 1-clic</button> `:'';
  const nm=id=>Z.st(id)?esc(Z.st(id).name):'?';
+ function rsPanel(n){if(ui.rs!==n.id||!Z.canReschedule(n.id))return'';const a=Z.alternatives(n.id);
+  return `<div class="paper" style="margin-top:8px">${a.length?`<p class="mu" style="margin:0 0 6px">Elige una clase con lugar en los próximos 7 días. Tu paquete no cambia.</p>
+  <select id="rr${n.id}" style="width:100%">${a.map(c=>`<option value="${c.id}">${Z.cdesc(c)} · ${c.cap-c.enr.length} lugares libres</option>`).join('')}</select>
+  <div class="row"><button class="s" data-a="rsno">Cerrar</button><button class="p s" data-a="rsok" data-v="${n.id}">Confirmar</button></div>`
+  :'<p class="mu" style="margin:0">No hay clases con lugar en los próximos 7 días. Revisa el calendario más tarde.</p>'}</div>`}
+ const act=n=>Z.session()&&Z.session().role==='alumna'?`<div class="row"><span>${moved(n)?'<span class="tag">Reagendada ✓ '+Z.cdesc(moved(n))+'</span>':''}</span><span>${rsBtn(n)}</span></div>${rsPanel(n)}`:'';
  const login=err=>`<main class="login"><div class="card"><h1>🪷 ZenStudio</h1><p class="mu">Inicia sesión para continuar</p>
   <form id="lf"><label>Correo<input name="email" type="email" required autocomplete="username"></label>
   <label>Contraseña<input name="pass" type="password" required autocomplete="current-password"></label>
   ${err?`<p class="err">${esc(err)}</p>`:''}<button class="p" type="submit">Entrar</button></form>
-  <p class="mu">Pruebas: admin@zenstudio.com / admin123 · alumna@zenstudio.com / alumna123</p></div></main>`;
- function shell(s,tab,body){const adm=s.role==='admin',u=Z.unread();
+  </div></main>`;
+ function shell(s,tab,body){const adm=s.role==='admin',u=Z.unread(),dk=document.documentElement.classList.contains('dark');
   const tabs=adm?[['admin-calendar','Calendario'],['admin-students','Alumnas y paquetes'],['admin-notes','Avisos']]:[['card','Mi tarjeta'],['calendar','Calendario'],['notes','Avisos'+(u?' ('+u+')':'')]];
-  const ban=Z.pending().map(n=>`<div class="banner">⚠️ <b>${adm?'Aviso':'Clase cancelada · Favor de reagendar'}</b><br>${esc(n.text)}
-   <div class="row"><span></span><span>${adm?'':'<button class="k s" data-a="go" data-v="calendar">Reagendar</button> '}<button class="s" data-a="dismiss" data-v="${n.id}">Entendido</button></span></div></div>`).join('');
+  const ban=Z.pending().map(n=>`<div class="banner">⚠️ <b>${adm?'Aviso':n.cid?'Clase cancelada · Favor de reagendar':'Aviso importante'}</b><br>${esc(n.text)}
+   <div class="row"><span></span><span>${adm?'':rsBtn(n)}<button class="s" data-a="dismiss" data-v="${n.id}">Entendido</button></span></div>${adm?'':rsPanel(n)}</div>`).join('');
   return `<div class="w"><nav><h1>🪷 ZenStudio</h1><span class="row"><span class="mu">${esc(s.name)} · ${adm?'Administradora':'Alumna'}</span>
-   <button class="s theme" data-a="theme" aria-label="Cambiar modo claro u oscuro" title="Cambiar modo">${document.documentElement.classList.contains('dark')?SUN:MOON}</button><button class="s" data-a="logout">Salir</button></span></nav>
+   <button class="s theme" data-a="theme" aria-label="Cambiar modo claro u oscuro" aria-pressed="${dk}" title="${dk?'Cambiar a modo claro':'Cambiar a modo oscuro'}">${dk?SUN:MOON}</button><button class="s" data-a="logout">Salir</button></span></nav>
    <div class="tabs">${tabs.map(t=>`<button class="${tab===t[0]?'on':''}" data-a="go" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>${ban}${body}</div>`}
  function card(sid,adm){adm=adm&&!!Z.session()&&Z.session().role==='admin';const s=Z.st(sid),r=Z.reserved(sid).map(c=>c.date).sort(),u=s.stamps.length;let h='';
   for(let i=0;i<10;i++){const a=i<u?'st':i<u+r.length?'rs':'';
@@ -35,7 +43,7 @@ const V=(()=>{
  function notes(s){const adm=s.role==='admin',ups=Z.data().classes.filter(c=>c.date>=Z.TODAY&&c.st==='ok').slice(0,40);
   const f=adm?`<div class="card"><h2>Enviar aviso</h2><select id="nt" style="width:100%;margin-bottom:6px"><option value="all">Todas las alumnas</option>${ups.map(c=>`<option value="${c.id}">Inscritas: ${Z.cdesc(c)} (${c.enr.length})</option>`).join('')}</select>
   <textarea id="nx" rows="3" style="width:100%" placeholder="Cambio de horario, clase especial, recordatorio…"></textarea><div class="row"><span class="mu">Avisa con tiempo para reagendar.</span><button class="p" data-a="send">Enviar</button></div></div>`:'';
-  const l=Z.notesFor();return f+`<div class="card"><h2>${adm?'Historial de avisos':'Mis avisos'}</h2>${l.length?l.map(n=>`<div class="nt ${n.kind==='alert'?'u':''}"><div class="mu">${new Date(n.ts).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'})}</div>${n.kind==='alert'?'⚠️ ':''}${esc(n.text)}</div>`).join(''):'<p class="mu">Sin avisos.</p>'}</div>`}
+  const l=Z.notesFor();return f+`<div class="card"><h2>${adm?'Historial de avisos':'Mis avisos'}</h2>${l.length?l.map(n=>`<div class="nt ${n.kind==='alert'?'u':''}"><div class="mu">${new Date(n.ts).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'})}</div>${n.kind==='alert'?'⚠️ ':''}${esc(n.text)}${act(n)}</div>`).join(''):'<p class="mu">Sin avisos.</p>'}</div>`}
  function calendar(s){const adm=s.role==='admin',S=Z.data(),m=ui.m,y=m.getFullYear(),mo=m.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate();
   let g=['L','M','M','J','V','S','D'].map(x=>`<div class="h">${x}</div>`).join('')+'<div></div>'.repeat(first);
   for(let d=1;d<=n;d++){const k=y+'-'+pad(mo+1)+'-'+pad(d),cs=S.classes.filter(c=>c.date===k);

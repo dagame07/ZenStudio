@@ -1,7 +1,7 @@
 /* ZenStudio · tema naturaleza (verde + rosa). Claro por defecto; oscuro con la clase .dark en <html> (sistema o botón) */
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 --bg:#F4F7F5;--sf:#fff;--tx:#2E4A38;--mu:#5F7667;--gr:#4E6E58;--gr2:#DCE8E0;--pk:#D4A5A5;--pk2:#F9EBEE;--bd:#D9E4DC;--rd:#B3443C;--on:#fff;--onk:#2E4A38;--pp:#F9EBEE}
-:root.dark{--bg:#1A241E;--sf:#223028;--tx:#E2E8F0;--mu:#9FB3A6;--gr:#8DB89B;--gr2:#2C3E33;--pk:#E8B4B8;--pk2:#3A2A2F;--bd:#35483C;--rd:#FF9A8F;--on:#14201A;--onk:#1A241E;--pp:#2B2227}
+:root.dark{color-scheme:dark;--bg:#1A241E;--sf:#223028;--tx:#E2E8F0;--mu:#9FB3A6;--gr:#8DB89B;--gr2:#2C3E33;--pk:#E8B4B8;--pk2:#3A2A2F;--bd:#35483C;--rd:#FF9A8F;--on:#14201A;--onk:#1A241E;--pp:#2B2227}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
 .w{max-width:980px;margin:auto;padding:12px}
@@ -33,4 +33,7 @@ button.k{background:var(--pk);color:var(--onk);border-color:var(--pk)}button.d{c
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.g2{grid-template-columns:1fr}}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:20px;display:none;z-index:9;max-width:90%}
 button:disabled{opacity:.5;cursor:not-allowed}
-.theme{color:var(--pk);border-color:var(--pk);display:inline-flex;align-items:center}
+.theme{color:var(--pk);border-color:var(--pk);display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:36px}
+body,.card,.day,button,select,input,textarea{transition:background-color .25s,color .25s,border-color .25s}
+:focus-visible{outline:2px solid var(--pk);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}

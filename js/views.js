@@ -5,6 +5,8 @@ const V=(()=>{
  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const fd=s=>new Date(s+'T12:00').toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
  const ui={m:new Date(N.getFullYear(),N.getMonth(),1),day:Z.TODAY,sel:null,cx:null,why:'instructora enferma'};
+ const SUN='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+ const MOON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
  const nm=id=>Z.st(id)?esc(Z.st(id).name):'?';
  const login=err=>`<main class="login"><div class="card"><h1>🪷 ZenStudio</h1><p class="mu">Inicia sesión para continuar</p>
   <form id="lf"><label>Correo<input name="email" type="email" required autocomplete="username"></label>
@@ -16,20 +18,20 @@ const V=(()=>{
   const ban=Z.pending().map(n=>`<div class="banner">⚠️ <b>${adm?'Aviso':'Clase cancelada · Favor de reagendar'}</b><br>${esc(n.text)}
    <div class="row"><span></span><span>${adm?'':'<button class="k s" data-a="go" data-v="calendar">Reagendar</button> '}<button class="s" data-a="dismiss" data-v="${n.id}">Entendido</button></span></div></div>`).join('');
   return `<div class="w"><nav><h1>🪷 ZenStudio</h1><span class="row"><span class="mu">${esc(s.name)} · ${adm?'Administradora':'Alumna'}</span>
-   <button class="s" data-a="theme" aria-label="Cambiar modo claro u oscuro">🌓 Modo</button><button class="s" data-a="logout">Salir</button></span></nav>
+   <button class="s theme" data-a="theme" aria-label="Cambiar modo claro u oscuro" title="Cambiar modo">${document.documentElement.classList.contains('dark')?SUN:MOON}</button><button class="s" data-a="logout">Salir</button></span></nav>
    <div class="tabs">${tabs.map(t=>`<button class="${tab===t[0]?'on':''}" data-a="go" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>${ban}${body}</div>`}
- function card(sid,adm){const s=Z.st(sid),r=Z.reserved(sid).map(c=>c.date).sort(),u=s.stamps.length;let h='';
+ function card(sid,adm){adm=adm&&!!Z.session()&&Z.session().role==='admin';const s=Z.st(sid),r=Z.reserved(sid).map(c=>c.date).sort(),u=s.stamps.length;let h='';
   for(let i=0;i<10;i++){const a=i<u?'st':i<u+r.length?'rs':'';
    h+=`<div class="sp ${a}"><i>${i+1}</i>${a==='st'?`<span>🪷</span>${fd(s.stamps[i])}`:a==='rs'?`apartada<br>${fd(r[i-u])}`:''}</div>`}
-  return `<div class="card"><h2>${adm?esc(s.name):'Mi tarjeta'} · Paquete ${s.pkgs}</h2><div class="paper"><div class="stamps">${h}</div></div>
+  return `<div class="card"><h2>${adm?esc(s.name):'Mi tarjeta'} · Paquete ${s.pkgs}${u>=Z.PKG?' · <span class="tag err">Paquete Agotado</span>':''}</h2><div class="paper"><div class="stamps">${h}</div></div>
   <p><b>${u}</b> clases tomadas · <b>${10-u}</b> faltantes${r.length?` · ${r.length} apartadas`:''}</p>
-  ${u>=10?'<p class="err">Paquete completo: las reservas están bloqueadas hasta renovar.</p>':''}
-  ${adm?`<div class="row"><span><button class="s" data-a="plus" data-v="${sid}">+ Sello</button> <button class="s" data-a="minus" data-v="${sid}">− Sello</button></span><button class="k s" data-a="renew" data-v="${sid}">Renovar paquete</button></div>`
+  ${u>=Z.PKG?'<p class="err"><b>Paquete Agotado</b>: las reservas están bloqueadas hasta renovar.</p>':''}
+  ${adm?`<div class="row"><span><button class="s" data-a="plus" data-v="${sid}">Agregar Sello</button> <button class="s" data-a="minus" data-v="${sid}">Remover Sello</button></span><button class="k s" data-a="renew" data-v="${sid}">Renovar paquete</button></div>`
   :'<p class="mu">Solo lectura: los sellos los registra Andrea al tomar tu clase.</p>'}</div>`}
  function students(){const S=Z.data();return `<div class="card"><h2>Nueva alumna</h2><div class="row"><input id="nn" placeholder="Nombre completo" style="flex:1"><button class="p" data-a="addst">Agregar</button></div></div>
   <div class="card"><h2>Alumnas (${S.students.length})</h2>${S.students.map(s=>`<div class="row" style="border-bottom:1px solid var(--bd)"><span>${esc(s.name)}</span>
-  <span class="mu">${s.stamps.length}/10${s.stamps.length>=10?' · <b class="err">renovar</b>':''}</span>
-  <span><button class="s" data-a="open" data-v="${s.id}">Ver tarjeta</button> <button class="s" data-a="plus" data-v="${s.id}">+ Sello</button></span></div>`).join('')}</div>${ui.sel?card(ui.sel,true):''}`}
+  <span class="mu">${s.stamps.length}/10${s.stamps.length>=Z.PKG?' · <b class="err">Paquete Agotado</b>':''}</span>
+  <span><button class="s" data-a="open" data-v="${s.id}">Ver tarjeta</button> <button class="s" data-a="plus" data-v="${s.id}">Agregar Sello</button></span></div>`).join('')}</div>${ui.sel?card(ui.sel,true):''}`}
  function notes(s){const adm=s.role==='admin',ups=Z.data().classes.filter(c=>c.date>=Z.TODAY&&c.st==='ok').slice(0,40);
   const f=adm?`<div class="card"><h2>Enviar aviso</h2><select id="nt" style="width:100%;margin-bottom:6px"><option value="all">Todas las alumnas</option>${ups.map(c=>`<option value="${c.id}">Inscritas: ${Z.cdesc(c)} (${c.enr.length})</option>`).join('')}</select>
   <textarea id="nx" rows="3" style="width:100%" placeholder="Cambio de horario, clase especial, recordatorio…"></textarea><div class="row"><span class="mu">Avisa con tiempo para reagendar.</span><button class="p" data-a="send">Enviar</button></div></div>`:'';
@@ -45,12 +47,12 @@ const V=(()=>{
   return `<div class="card"><div class="row"><button data-a="mo" data-v="-1">‹</button><h2 style="margin:0;text-transform:capitalize">${m.toLocaleDateString('es-MX',{month:'long',year:'numeric'})}</h2><button data-a="mo" data-v="1">›</button></div>
   <div class="cal">${g}</div><p class="mu">● verde: hay lugar · ● rosa: llena (lista de espera) · gris: cancelada${adm?'':' · aro rosa: tu reserva'}</p></div>${add}
   <h2>${fd(ui.day)}</h2>${cs.length?cs.map(c=>cls(c,s)).join(''):'<div class="card mu">No hay clases este día.</div>'}`}
- function cls(c,s){const adm=s.role==='admin',f=c.enr.length>=c.cap,past=c.date<Z.TODAY,cx=c.st==='cx';let a='';
+ function cls(c,s){const adm=s.role==='admin',ag=!adm&&Z.st(s.sid).stamps.length>=Z.PKG,f=c.enr.length>=c.cap,past=c.date<Z.TODAY,cx=c.st==='cx';let a='';
   if(cx)a='<span class="tag">Cancelada</span>';
   else if(!adm){const i=c.enr.includes(s.sid),w=c.wait.indexOf(s.sid);
    a=i?`<span class="tag">Inscrita ✓</span> ${past?'':`<button class="d s" data-a="rel" data-v="${c.id}">Cancelar mi lugar</button>`}`:
    w>=0?`<span class="tag">Lista de espera #${w+1}</span> <button class="d s" data-a="rel" data-v="${c.id}">Salir</button>`:
-   past?'':`<button class="p s" data-a="res" data-v="${c.id}">${f?'Unirme a lista de espera':'Reservar'}</button>`}
+   past?'':`<button class="p s" data-a="res" data-v="${c.id}" ${ag?'disabled title="Paquete Agotado"':''}>${ag?'Paquete Agotado':f?'Unirme a lista de espera':'Reservar'}</button>`}
   const L=(l,att)=>l.length?l.map(id=>`<div class="row"><span>${nm(id)}${c.att.includes(id)?' 🪷':''}</span>${adm&&!cx?`<span>${att&&!c.att.includes(id)?`<button class="s" data-a="stp" data-v="${c.id}|${id}">Sellar</button> `:''}<button class="d s" data-a="adrel" data-v="${c.id}|${id}">Quitar</button></span>`:''}</div>`).join(''):'<span class="mu">Nadie aún</span>';
   const ask=ui.cx===c.id?`<div class="banner">¿Cancelar la clase del ${Z.cdesc(c)}? Se avisará a ${c.enr.length+c.wait.length} alumnas para reagendar.<div class="row"><span></span><span><button class="s" data-a="cxno">Volver</button> <button class="d s" data-a="cxok" data-v="${c.id}">Confirmar cancelación</button></span></div></div>`:'';
   return `<div class="card"><div class="row"><div><b>${c.time}</b> · ${c.tp==='t'?'Tarde':'Mañana'} · ${adm?`<select data-c="inst" data-v="${c.id}">${Z.INS.map(i=>`<option ${i===c.inst?'selected':''}>${i}</option>`).join('')}</select>`:'con '+c.inst}</div><div>${a}</div></div>

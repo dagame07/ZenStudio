@@ -11,13 +11,13 @@ const Zen=(()=>{
  const rnd=n=>{n=Math.sin(n*9301+49297)*233280;return n-Math.floor(n)};
  function seed(){
   const names=['Alumna Prueba','Bruna Reyes','Carla Mena','Diana Ortiz','Elena Ruiz','Fer Salazar','Gaby Torres','Hilda Vega','Irma Soto','Julia Pérez','Karla Díaz','Laura Cruz','Mónica Gil','Nadia Franco'];
-  const students=names.map((n,i)=>{const u=i===3?9:i===0?4:(i*3)%9,st=[];for(let j=0;j<u;j++){const d=new Date(T);d.setDate(T.getDate()-1-j*3);st.push(iso(d))}return{id:'s'+i,name:n,stamps:st.reverse(),pkgs:1}});
+  const students=names.map((n,i)=>{const u=i===3?9:i===0?0:(i*3)%9,st=[];for(let j=0;j<u;j++){const d=new Date(T);d.setDate(T.getDate()-1-j*3);st.push(iso(d))}return{id:'s'+i,name:n,stamps:st.reverse(),pkgs:1}});
   const classes=[];let k=0,full=false;
   for(let o=-14;o<=75;o++){const d=new Date(T);d.setDate(T.getDate()+o);const w=d.getDay();if(!w)continue;
    (w===6?[['09:00','m']]:[['07:30','m'],['18:30','t']]).forEach(([t,tp])=>{k++;
     const cap=tp==='t'?CAP_TARDE:CAP_MANANA,c={id:'c'+k,date:iso(d),time:t,tp,cap,inst:INS[k%3],st:'ok',enr:[],wait:[],att:[]};
     if(o>=0){if(tp==='t'&&!full){full=true;c.enr=students.slice(0,12).map(s=>s.id);c.wait=['s12','s13']}
-     else{const n=2+Math.floor(rnd(k)*cap*.6),r=1+k%13;for(let i=0;i<n;i++)c.enr.push('s'+((r+i)%14))}}
+     else{const n=2+Math.floor(rnd(k)*cap*.6),r=k%13;for(let i=0;i<n;i++)c.enr.push('s'+(1+(r+i)%13))}}
     classes.push(c)})}
   return{students,classes,notes:[{id:1,ts:Date.now(),to:'all',kind:'info',readBy:[],text:'¡Bienvenidas a ZenStudio! Aquí verás tu tarjeta, el calendario y los avisos del estudio.'}],nid:2};
  }
@@ -48,23 +48,23 @@ const Zen=(()=>{
  function join(cid,sid){const c=cl(cid),s=st(sid);
   if(c.st!=='ok')throw new Error('La clase está cancelada');
   if(c.enr.includes(sid)||c.wait.includes(sid))throw new Error('Ya estás en esta clase');
-  if(s.stamps.length>=PKG)throw new Error('Paquete completo (10 sellos): reservas bloqueadas hasta renovar');
+  if(s.stamps.length>=PKG)throw new Error('Paquete Agotado (10/10 sellos): reservas bloqueadas hasta renovar');
   if(s.stamps.length+reserved(sid).length>=PKG)throw new Error('Ya apartaste todas las clases de tu paquete');
   if(c.enr.length<c.cap){c.enr.push(sid);return'Lugar reservado'}
   c.wait.push(sid);return'Clase llena: quedaste en lista de espera #'+c.wait.length}
  function fill(c){while(c.wait.length&&c.enr.length<c.cap){const p=c.wait.shift();if(st(p).stamps.length>=PKG)continue;c.enr.push(p);notify([p],'¡Se liberó un lugar! Ya estás inscrita en la clase del '+cdesc(c)+'.','ok')}}
  function leave(cid,sid){const c=cl(cid);c.enr=c.enr.filter(x=>x!==sid);c.wait=c.wait.filter(x=>x!==sid);fill(c)}
  function addStamp(s,from){if(s.stamps.length>=PKG)throw new Error('La tarjeta ya está completa: renueva el paquete');s.stamps.push(from);
-  if(s.stamps.length>=PKG)notify(['admin'],'La tarjeta de '+s.name+' llegó a 10 sellos. Hay que renovar su paquete.','alert')}
+  if(s.stamps.length>=PKG)notify(['admin'],'Paquete Agotado: la tarjeta de '+s.name+' llegó a 10/10 sellos. Hay que renovar su paquete.','alert')}
  // ---- acciones de ALUMNA (solo sobre su propia cuenta) ----
  const reserve=cid=>{const s=need('alumna'),m=join(cid,s.sid);save();return m};
  const cancelMine=cid=>{const s=need('alumna');leave(cid,s.sid);save()};
  // ---- acciones de ADMINISTRADORA ----
  const A=fn=>(...a)=>{need('admin');const r=fn(...a);save();return r};
- return{INS,TODAY,PKG,USERS:undefined,session,login,logout,reload,data:()=>S,st,cl,reserved,notesFor,pending,unread,markRead,dismiss,cdesc,reserve,cancelMine,
+ return{INS,TODAY,PKG,session,login,logout,reload,data:()=>S,st,cl,reserved,notesFor,pending,unread,markRead,dismiss,cdesc,reserve,cancelMine,
   adminEnroll:A((cid,sid)=>join(cid,sid)),adminLeave:A((cid,sid)=>leave(cid,sid)),
   stamp:A((cid,sid)=>{const c=cl(cid);if(c.att.includes(sid))throw new Error('Ya tiene sello en esta clase');addStamp(st(sid),c.date);c.att.push(sid)}),
-  manualStamp:A((sid,d)=>{const s=st(sid);if(d>0)addStamp(s,TODAY);else if(s.stamps.length)s.stamps.pop()}),
+  manualStamp:A((sid,d)=>{const s=st(sid);if(d>0)addStamp(s,TODAY);else if(s.stamps.length){const last=s.stamps.pop();S.classes.forEach(c=>{if(c.date===last)c.att=c.att.filter(x=>x!==sid)})}}),
   renew:A(sid=>{const s=st(sid);s.stamps=[];s.pkgs++}),
   addStudent:A(n=>{if(n)S.students.push({id:'s'+Date.now(),name:n,stamps:[],pkgs:1})}),
   setCap:A((cid,d)=>{const c=cl(cid);c.cap=Math.max(1,c.cap+d);fill(c)}),

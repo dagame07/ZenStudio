@@ -3,9 +3,9 @@ const $=id=>document.getElementById(id);
 let loginErr='';
 // ---- tema claro/oscuro: sistema por defecto, botón para forzar ----
 const mq=window.matchMedia('(prefers-color-scheme: dark)');
-function applyTheme(){let t=null;try{t=localStorage.getItem('zen_theme')}catch(e){}document.documentElement.dataset.theme=t||(mq.matches?'dark':'light')}
-function toggleTheme(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('zen_theme',n)}catch(e){}applyTheme()}
-mq.addEventListener&&mq.addEventListener('change',applyTheme);applyTheme();
+function applyTheme(){let t=null;try{t=localStorage.getItem('zen_theme')}catch(e){}document.documentElement.classList.toggle('dark',(t||(mq.matches?'dark':'light'))==='dark')}
+function toggleTheme(){const n=document.documentElement.classList.contains('dark')?'light':'dark';try{localStorage.setItem('zen_theme',n)}catch(e){}applyTheme();render()}
+mq.addEventListener&&mq.addEventListener('change',()=>{applyTheme();render()});applyTheme();
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',3000)}
 // ---- rutas (hash plano). Alumna jamás llega a admin-*; admin no usa las rutas de alumna ----
 const ROUTES={admin:['admin-calendar','admin-students','admin-notes'],alumna:['card','calendar','notes']};
